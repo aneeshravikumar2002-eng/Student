@@ -5,6 +5,12 @@ pipeline {
         maven 'maven'
     }
 
+    environment {
+        APP_NAME = "student-dashboard"
+        APP_PORT = "8080"
+        APP_URL = "http://localhost:8080"
+    }
+
     stages {
 
         stage('Checkout Code') {
@@ -20,37 +26,12 @@ pipeline {
             }
         }
 
-        stage('Package Application') {
-            steps {
-                sh './mvnw clean package -DskipTests'
-            }
-        }
-
-        stage('Start Application') {
-            steps {
-                sh '''
-                echo "Stopping old application..."
-                pkill -f student-dashboard || true
-
-                echo "Starting Spring Boot application..."
-                nohup java -jar target/*.jar > app.log 2>&1 &
-
-                echo "Waiting for application startup..."
-                sleep 30
-
-                echo "Checking application..."
-                curl http://localhost:8080 || true
-                '''
-            }
-        }
-
         stage('SonarQube Analysis') {
             steps {
                 script {
                     def mvn = tool 'maven'
 
                     withSonarQubeEnv('sonarqube') {
-
                         sh """
                         ${mvn}/bin/mvn clean verify \
                         org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
@@ -70,6 +51,33 @@ pipeline {
             }
         }
 
+        stage('Package Application') {
+            steps {
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh './mvnw deploy -DskipTests'
+            }
+        }
+
+        stage('Start Application') {
+            steps {
+                sh '''
+                echo "Stopping old app..."
+                pkill -f student-dashboard || true
+
+                echo "Starting app..."
+                nohup java -jar target/student-dashboard-0.0.1.jar \
+                > app.log 2>&1 &
+
+                sleep 20
+                '''
+            }
+        }
+
         stage('Install Node Dependencies') {
             steps {
                 sh 'npm install'
@@ -84,18 +92,15 @@ pipeline {
 
         stage('Run Selenium Tests') {
             steps {
-                sh './mvnw test -Dtest=LoginTest'
-            }
-        }
-
-        stage('Upload to Nexus') {
-            steps {
-                sh './mvnw deploy -DskipTests'
+                sh './mvnw test'
             }
         }
     }
 
     post {
+        always {
+            sh 'pkill -f student-dashboard || true'
+        }
 
         success {
             echo 'Pipeline Success'
@@ -103,13 +108,6 @@ pipeline {
 
         failure {
             echo 'Pipeline Failed'
-        }
-
-        always {
-            sh '''
-            echo "Stopping application..."
-            pkill -f student-dashboard || true
-            '''
         }
     }
 }
