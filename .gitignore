@@ -1,0 +1,22 @@
+target/
+node_modules/
+.cypress/
+.vscode/
+*.log
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+~/.cache/Cypress/
+
+# Maven
+.mvn/
+
+# IDE
+.idea/
+
+# OS
+.DS_Store
+
+*.deb
+google-chrome-stable_current_amd64.deb
