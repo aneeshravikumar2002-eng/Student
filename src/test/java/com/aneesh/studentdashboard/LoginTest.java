@@ -16,7 +16,9 @@ public class LoginTest {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");
+
+        options.setBinary("/usr/bin/google-chrome");
+        options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
