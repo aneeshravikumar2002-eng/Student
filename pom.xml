@@ -107,7 +107,7 @@
             <id>nexus-cred</id>
             <name>Nexus Snapshots</name>
             <url>
-                http://3.7.251.54:8081/repository/maven-snapshots/
+                http://13.200.74.102:8081/repository/maven-snapshots/
             </url>
         </snapshotRepository>
 
