@@ -9,7 +9,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'master',
+                git branch: 'main',
                 url: 'https://gitlab.com/aneeshravikumar2002-group/student.git'
             }
         }
