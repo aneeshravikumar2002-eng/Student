@@ -20,6 +20,30 @@ pipeline {
             }
         }
 
+        stage('Package Application') {
+            steps {
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Start Application') {
+            steps {
+                sh '''
+                echo "Stopping old application..."
+                pkill -f student-dashboard || true
+
+                echo "Starting Spring Boot application..."
+                nohup java -jar target/*.jar > app.log 2>&1 &
+
+                echo "Waiting for application startup..."
+                sleep 30
+
+                echo "Checking application..."
+                curl http://localhost:8080 || true
+                '''
+            }
+        }
+
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -43,22 +67,6 @@ pipeline {
                 timeout(time: 5, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
-            }
-        }
-
-        stage('Package Application') {
-            steps {
-                sh './mvnw clean package -DskipTests'
-            }
-        }
-
-        stage('Start Application') {
-            steps {
-                sh '''
-                pkill -f student-dashboard || true
-                nohup java -jar target/*.jar > app.log 2>&1 &
-                sleep 30
-                '''
             }
         }
 
@@ -88,6 +96,7 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'Pipeline Success'
         }
@@ -97,7 +106,10 @@ pipeline {
         }
 
         always {
-            sh 'pkill -f student-dashboard || true'
+            sh '''
+            echo "Stopping application..."
+            pkill -f student-dashboard || true
+            '''
         }
     }
 }
