@@ -46,6 +46,18 @@ pipeline {
             }
         }
 
+        stage('Package Application') {
+            steps {
+                sh './mvnw clean package -DskipTests'
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh './mvnw deploy -DskipTests'
+            }
+        }
+
         stage('Install Node Dependencies') {
             steps {
                 sh 'npm install'
@@ -61,12 +73,6 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 sh './mvnw test'
-            }
-        }
-
-        stage('Package Application') {
-            steps {
-                sh './mvnw clean package -DskipTests'
             }
         }
     }
