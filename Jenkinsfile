@@ -5,28 +5,42 @@ pipeline {
         maven 'maven'
     }
 
-    environment {
-        APP_URL = "http://13.206.121.158:8080"
-    }
-
     stages {
 
-        stage('Git Checkout') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'main',
+                git branch: 'master',
                 url: 'https://gitlab.com/aneeshravikumar2002-group/student.git'
             }
         }
 
         stage('Build Project') {
             steps {
-                sh './mvnw clean package -DskipTests'
+                sh './mvnw clean compile'
             }
         }
 
-        stage('Run Unit Tests') {
+        stage('SonarQube Analysis') {
             steps {
-                sh './mvnw test'
+                script {
+                    def mvn = tool 'maven'
+
+                    withSonarQubeEnv('sonarqube') {
+
+                        sh """
+                        ${mvn}/bin/mvn clean verify \
+                        org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                        -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
+                        -Dsonar.projectName='Student'
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Package Application') {
+            steps {
+                sh './mvnw clean package -DskipTests'
             }
         }
 
@@ -45,7 +59,7 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline Executed Successfully'
+            echo 'Pipeline Success'
         }
 
         failure {
