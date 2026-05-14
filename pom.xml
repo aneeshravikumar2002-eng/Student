@@ -15,7 +15,7 @@
 
     <groupId>com.aneesh</groupId>
     <artifactId>student-dashboard</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <name>student-dashboard</name>
     <description>Student Dashboard DevOps Project</description>
@@ -95,7 +95,7 @@
     <!-- Nexus Repository -->
     <distributionManagement>
         <repository>
-            <id>nexus</id>
+            <id>nexus-cred</id>
             <name>Nexus Releases</name>
             <url>http://3.7.251.54:8081/repository/maven-releases/</url>
         </repository>
