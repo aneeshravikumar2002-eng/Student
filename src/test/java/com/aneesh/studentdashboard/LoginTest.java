@@ -24,7 +24,7 @@ public class LoginTest {
 
         WebDriver driver = new ChromeDriver(options);
 
-        driver.get("http://13.206.121.158:8080");
+        driver.get("http://15.207.10.227:8080");
 
         WebElement username =
                 driver.findElement(By.xpath("//input[@type='text']"));
