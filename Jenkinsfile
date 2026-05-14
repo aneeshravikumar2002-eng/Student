@@ -52,9 +52,13 @@ pipeline {
             }
         }
 
-        stage('Upload to Nexus') {
+        stage('Start Application') {
             steps {
-                sh './mvnw deploy -DskipTests'
+                sh '''
+                pkill -f student-dashboard || true
+                nohup java -jar target/*.jar > app.log 2>&1 &
+                sleep 30
+                '''
             }
         }
 
@@ -72,7 +76,13 @@ pipeline {
 
         stage('Run Selenium Tests') {
             steps {
-                sh './mvnw test'
+                sh './mvnw test -Dtest=LoginTest'
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh './mvnw deploy -DskipTests'
             }
         }
     }
@@ -84,6 +94,10 @@ pipeline {
 
         failure {
             echo 'Pipeline Failed'
+        }
+
+        always {
+            sh 'pkill -f student-dashboard || true'
         }
     }
 }
