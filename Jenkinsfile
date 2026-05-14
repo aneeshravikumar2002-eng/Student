@@ -38,9 +38,17 @@ pipeline {
             }
         }
 
-        stage('Package Application') {
+        stage('Quality Gate') {
             steps {
-                sh './mvnw clean package -DskipTests'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Install Node Dependencies') {
+            steps {
+                sh 'npm install'
             }
         }
 
@@ -53,6 +61,12 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 sh './mvnw test'
+            }
+        }
+
+        stage('Package Application') {
+            steps {
+                sh './mvnw clean package -DskipTests'
             }
         }
     }
