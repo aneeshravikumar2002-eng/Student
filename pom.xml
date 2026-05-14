@@ -96,7 +96,7 @@
     <distributionManagement>
         <repository>
             <id>nexus-cred</id>
-            <name>Nexus Releases</name>
+            <name>Nexus releases</name>
             <url>http://3.7.251.54:8081/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
