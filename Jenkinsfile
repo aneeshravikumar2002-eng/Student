@@ -47,13 +47,13 @@ pipeline {
                 pkill -f student-dashboard || true
                 nohup java -jar target/*.jar > app.log 2>&1 &
 
-                for i in {1..20}; do
-                    curl -s ${APP_URL} > /dev/null && exit 0
-                    sleep 5
-                done
+                sleep 10
 
-                cat app.log
-                exit 1
+                curl -s ${APP_URL} > /dev/null || {
+                    echo "Application failed to start"
+                    cat app.log
+                    exit 1
+                }
                 '''
             }
         }
