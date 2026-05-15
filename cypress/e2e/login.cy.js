@@ -2,7 +2,7 @@ describe('Student Dashboard Test', () => {
 
   it('Login page should open', () => {
 
-    cy.visit('http://15.207.10.227:8000')
+    cy.visit('http://localhost:8000')
 
     cy.get('input[type="text"]')
       .type('aneesh')
