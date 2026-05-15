@@ -6,7 +6,8 @@ pipeline {
     }
 
     environment {
-        DEV_URL = "http://13.205.120.107:8000"
+        DEV_IP  = "13.205.120.107"
+        DEV_URL = "http://${DEV_IP}:8000"
     }
 
     stages {
@@ -46,10 +47,10 @@ pipeline {
                 sh '''
                 scp -o StrictHostKeyChecking=no \
                 target/*.jar \
-                ubuntu@DEV_IP:/opt/student-dashboard/student-dashboard.jar
+                ubuntu@${DEV_IP}:/opt/student-dashboard/student-dashboard.jar
 
                 ssh -o StrictHostKeyChecking=no \
-                ubuntu@DEV_IP '
+                ubuntu@${DEV_IP} '
                 sudo systemctl restart student-dashboard
                 sudo systemctl status student-dashboard --no-pager
                 '
