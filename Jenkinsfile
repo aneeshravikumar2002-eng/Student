@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        APP_URL = "http://localhost:8000"
+        DEV_URL = "http://13.205.120.107:8000"
     }
 
     stages {
@@ -41,17 +41,29 @@ pipeline {
             }
         }
 
-        stage('Start Application') {
+        stage('Deploy to DEV') {
             steps {
                 sh '''
-                pkill -f student-dashboard || true
-                nohup java -jar target/*.jar > app.log 2>&1 &
+                scp -o StrictHostKeyChecking=no \
+                target/*.jar \
+                ubuntu@DEV_IP:/opt/student-dashboard/student-dashboard.jar
 
+                ssh -o StrictHostKeyChecking=no \
+                ubuntu@DEV_IP '
+                sudo systemctl restart student-dashboard
+                sudo systemctl status student-dashboard --no-pager
+                '
+                '''
+            }
+        }
+
+        stage('Verify DEV Deployment') {
+            steps {
+                sh '''
                 sleep 10
 
-                curl -s ${APP_URL} > /dev/null || {
-                    echo "Application failed to start"
-                    cat app.log
+                curl -s ${DEV_URL} > /dev/null || {
+                    echo "DEV deployment failed"
                     exit 1
                 }
                 '''
@@ -70,17 +82,12 @@ pipeline {
     }
 
     post {
-        always {
-            sh 'pkill -f student-dashboard || true'
-        }
-
         success {
             echo 'Pipeline Success'
         }
 
         failure {
             echo 'Pipeline Failed'
-            sh 'cat app.log || true'
         }
     }
 }
