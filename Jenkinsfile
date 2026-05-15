@@ -12,14 +12,24 @@ pipeline {
 
     stages {
 
-        stage('Build + Sonar') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main',
                 url: 'https://gitlab.com/aneeshravikumar2002-group/student.git'
+            }
+        }
 
+        stage('Build') {
+            steps {
+                sh './mvnw clean compile'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
                 withSonarQubeEnv('sonarqube') {
                     sh '''
-                    ./mvnw clean test sonar:sonar \
+                    ./mvnw sonar:sonar \
                     -Dtest=!LoginTest \
                     -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
                     -Dsonar.projectName=Student
@@ -61,9 +71,10 @@ pipeline {
         stage('Verify DEV Deployment') {
             steps {
                 sh '''
+                echo "Verifying DEV deployment..."
                 sleep 10
 
-                curl -s ${DEV_URL} > /dev/null || {
+                curl -f ${DEV_URL} > /dev/null || {
                     echo "DEV deployment failed"
                     exit 1
                 }
@@ -73,11 +84,13 @@ pipeline {
 
         stage('Selenium and Cypress Tests') {
             steps {
-                sh '''
+                sh """
                 npm install
-                npx cypress run
+
+                CYPRESS_BASE_URL=${DEV_URL} npx cypress run
+
                 ./mvnw test -Dtest=LoginTest
-                '''
+                """
             }
         }
     }
