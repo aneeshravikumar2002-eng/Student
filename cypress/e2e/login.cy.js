@@ -2,7 +2,7 @@ describe('Student Dashboard Test', () => {
 
   it('Login page should open', () => {
 
-    cy.visit('http://localhost:8000')
+    cy.visit('/')
 
     cy.get('input[type="text"]')
       .type('aneesh')
@@ -14,6 +14,7 @@ describe('Student Dashboard Test', () => {
       .click()
 
     cy.contains('Welcome')
+      .should('be.visible')
   })
 
 })
