@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        APP_URL = "http://15.207.10.227:8080"
+        APP_URL = "http://15.207.10.227:8000"
     }
 
     stages {
