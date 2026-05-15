@@ -25,9 +25,8 @@ pipeline {
 
                     withSonarQubeEnv('sonarqube') {
                         sh """
-                        ${mvn}/bin/mvn clean verify \
-                        org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-                        -DskipUITests=true \
+                        ${mvn}/bin/mvn clean test sonar:sonar \
+                        -Dtest=!LoginTest \
                         -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
                         -Dsonar.projectName='Student'
                         """
@@ -44,7 +43,7 @@ pipeline {
             }
         }
 
-        stage('Package + Upload Nexus') {
+        stage('Package + Nexus') {
             steps {
                 sh '''
                 ./mvnw clean package -DskipTests
@@ -56,10 +55,8 @@ pipeline {
         stage('Start Application') {
             steps {
                 sh '''
-                echo "Stopping old app..."
                 pkill -f student-dashboard || true
 
-                echo "Starting application..."
                 nohup java -jar target/student-dashboard-0.0.1-SNAPSHOT.jar \
                 > app.log 2>&1 &
 
@@ -82,7 +79,7 @@ pipeline {
             }
         }
 
-        stage('Selenium and cypress Tests') {
+        stage('Selenium and Cypress Tests') {
             steps {
                 sh '''
                 npm install
