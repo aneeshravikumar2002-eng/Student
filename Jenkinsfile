@@ -11,26 +11,18 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
+        stage('Build + Sonar') {
             steps {
                 git branch: 'main',
                 url: 'https://gitlab.com/aneeshravikumar2002-group/student.git'
-            }
-        }
 
-        stage('Build + SonarQube') {
-            steps {
-                script {
-                    def mvn = tool 'maven'
-
-                    withSonarQubeEnv('sonarqube') {
-                        sh """
-                        ${mvn}/bin/mvn clean test sonar:sonar \
-                        -Dtest=!LoginTest \
-                        -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
-                        -Dsonar.projectName='Student'
-                        """
-                    }
+                withSonarQubeEnv('sonarqube') {
+                    sh '''
+                    ./mvnw clean test sonar:sonar \
+                    -Dtest=!LoginTest \
+                    -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
+                    -Dsonar.projectName=Student
+                    '''
                 }
             }
         }
@@ -45,10 +37,7 @@ pipeline {
 
         stage('Package + Nexus') {
             steps {
-                sh '''
-                ./mvnw clean package -DskipTests
-                ./mvnw deploy -DskipTests
-                '''
+                sh './mvnw clean package deploy -DskipTests'
             }
         }
 
@@ -57,22 +46,15 @@ pipeline {
                 sh '''
                 pkill -f student-dashboard || true
 
-                nohup java -jar target/student-dashboard-0.0.1-SNAPSHOT.jar \
-                > app.log 2>&1 &
+                nohup java -jar target/*.jar > app.log 2>&1 &
 
                 echo "Waiting for application..."
 
-                for i in {1..20}
-                do
-                    if curl -I ${APP_URL} > /dev/null 2>&1; then
-                        echo "Application is UP"
-                        exit 0
-                    fi
-
+                for i in {1..20}; do
+                    curl -I ${APP_URL} && exit 0
                     sleep 5
                 done
 
-                echo "Application failed to start"
                 cat app.log
                 exit 1
                 '''
