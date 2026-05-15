@@ -45,13 +45,10 @@ pipeline {
             steps {
                 sh '''
                 pkill -f student-dashboard || true
-
                 nohup java -jar target/*.jar > app.log 2>&1 &
 
-                echo "Waiting for application..."
-
                 for i in {1..20}; do
-                    curl -I ${APP_URL} && exit 0
+                    curl -s ${APP_URL} > /dev/null && exit 0
                     sleep 5
                 done
 
