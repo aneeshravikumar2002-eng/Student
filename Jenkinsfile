@@ -29,7 +29,7 @@ pipeline {
             steps {
                 withSonarQubeEnv('sonarqube') {
                     sh '''
-                    ./mvnw sonar:sonar \
+                    ./mvnw clean verify sonar:sonar \
                     -Dtest=!LoginTest \
                     -Dsonar.projectKey=aneeshravikumar2002-group_student_6ce334be-6c38-4c78-9dab-54266f19606b \
                     -Dsonar.projectName=Student
