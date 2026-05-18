@@ -23,6 +23,7 @@
     <description>Student Dashboard DevOps Project</description>
 
     <properties>
+
         <java.version>21</java.version>
 
         <!-- Default version -->
@@ -34,6 +35,12 @@
         </sonar.projectKey>
 
         <sonar.projectName>Student</sonar.projectName>
+
+        <!-- JaCoCo XML Report Path -->
+        <sonar.coverage.jacoco.xmlReportPaths>
+            ${project.basedir}/target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+
     </properties>
 
     <dependencies>
@@ -110,7 +117,7 @@
 
                     <execution>
                         <id>report</id>
-                        <phase>test</phase>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
