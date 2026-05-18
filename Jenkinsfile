@@ -119,17 +119,22 @@ pipeline {
             CURRENT=${BUILD_NUMBER}-SNAPSHOT
 
             PREVIOUS=$(curl -s \
-            ${NEXUS_URL}/service/rest/v1/search?repository=${REPO}\&name=${APP_NAME} \
+            "${NEXUS_URL}/service/rest/v1/search?repository=${REPO}&name=${APP_NAME}" \
             | jq -r '.items[].version' \
             | grep SNAPSHOT \
             | sort -V \
             | grep -v ${CURRENT} \
             | tail -1)
 
+            if [ -z "$PREVIOUS" ]; then
+                echo "No rollback version found"
+                exit 1
+            fi
+
             echo "Rollback Version: $PREVIOUS"
 
             wget -O rollback.jar \
-            ${NEXUS_URL}/repository/${REPO}/${GROUP}/${APP_NAME}/$PREVIOUS/${APP_NAME}-$PREVIOUS.jar
+            "${NEXUS_URL}/repository/${REPO}/${GROUP}/${APP_NAME}/${PREVIOUS}/${APP_NAME}-${PREVIOUS}.jar"
 
             scp -o StrictHostKeyChecking=no \
             rollback.jar \
