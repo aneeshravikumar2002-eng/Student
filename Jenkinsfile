@@ -8,6 +8,12 @@ pipeline {
     environment {
         DEV_IP  = "13.205.120.107"
         DEV_URL = "http://${DEV_IP}:8000"
+
+        NEXUS_URL = "http://13.200.74.102:8081"
+        REPO = "maven-snapshots"
+
+        APP_NAME = "student-dashboard"
+        GROUP = "com/aneeshravikumar2002-group"
     }
 
     stages {
@@ -48,7 +54,11 @@ pipeline {
 
         stage('Package + Nexus') {
             steps {
-                sh './mvnw clean package deploy -DskipTests'
+                sh """
+                ./mvnw clean package deploy \
+                -DskipTests \
+                -Drevision=${BUILD_NUMBER}-SNAPSHOT
+                """
             }
         }
 
@@ -96,12 +106,43 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'Pipeline Success'
         }
 
         failure {
-            echo 'Pipeline Failed'
+
+            echo 'Pipeline Failed - Starting Auto Rollback'
+
+            sh '''
+            CURRENT=${BUILD_NUMBER}-SNAPSHOT
+
+            PREVIOUS=$(curl -s \
+            ${NEXUS_URL}/service/rest/v1/search?repository=${REPO}\&name=${APP_NAME} \
+            | jq -r '.items[].version' \
+            | grep SNAPSHOT \
+            | sort -V \
+            | grep -v ${CURRENT} \
+            | tail -1)
+
+            echo "Rollback Version: $PREVIOUS"
+
+            wget -O rollback.jar \
+            ${NEXUS_URL}/repository/${REPO}/${GROUP}/${APP_NAME}/$PREVIOUS/${APP_NAME}-$PREVIOUS.jar
+
+            scp -o StrictHostKeyChecking=no \
+            rollback.jar \
+            ubuntu@${DEV_IP}:/opt/student-dashboard/student-dashboard.jar
+
+            ssh -o StrictHostKeyChecking=no \
+            ubuntu@${DEV_IP} '
+            sudo systemctl restart student-dashboard
+            sudo systemctl status student-dashboard --no-pager
+            '
+
+            echo "Rollback completed"
+            '''
         }
     }
 }
